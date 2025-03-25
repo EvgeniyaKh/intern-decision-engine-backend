@@ -20,12 +20,30 @@ public class DecisionEngine {
     private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
     private int creditModifier = 0;
 
+    /** Calculating the age of user */
+    private int calculateAge(String personalCode) {
+        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
+        int currentDay = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH);
+        int birthYear = Integer.parseInt(personalCode.substring(1, 3));
+        int birthCentury = (birthYear <= currentYear) ? 2000 : 1900;
+        int fullBirthYear = birthCentury + birthYear;
+        int birthMonth = Integer.parseInt(personalCode.substring(3, 5));
+        int birthDay = Integer.parseInt(personalCode.substring(5, 7));
+        int age = currentYear - fullBirthYear;
+
+        if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+        age--;
+        }
+        return age
+    }
+
     /**
      * Calculates the maximum loan amount and period for the customer based on their ID code,
      * the requested loan amount and the loan period.
      * The loan period must be between 12 and 60 months (inclusive).
      * The loan amount must be between 2000 and 10000€ months (inclusive).
-     *
+     * @param userCountry
      * @param personalCode ID code of the customer that made the request.
      * @param loanAmount Requested loan amount
      * @param loanPeriod Requested loan period
@@ -35,7 +53,7 @@ public class DecisionEngine {
      * @throws InvalidLoanPeriodException If the requested loan period is invalid
      * @throws NoValidLoanException If there is no valid loan found for the given ID code, loan amount and loan period
      */
-    public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod)
+    public Decision calculateApprovedLoan(String userCountry, String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
             NoValidLoanException {
         try {
