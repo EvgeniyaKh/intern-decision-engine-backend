@@ -31,6 +31,7 @@ class DecisionEngineTest {
         segment1PersonalCode = "50307172740";
         segment2PersonalCode = "38411266610";
         segment3PersonalCode = "35006069515";
+        segment3PersonalCode2 = "49110068123";
         userCountry = "Estonia";
     }
 
@@ -59,7 +60,7 @@ class DecisionEngineTest {
     @Test
     void testSegment3PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode, 4000L, 12);
+        Decision decision = decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode2, 4000L, 12);
         assertEquals(10000, decision.getLoanAmount());
         assertEquals(12, decision.getLoanPeriod());
     }
@@ -107,6 +108,25 @@ class DecisionEngineTest {
     void testNoValidLoanFound() {
         assertThrows(NoValidLoanException.class,
                 () -> decisionEngine.calculateApprovedLoan(userCountry, debtorPersonalCode, 10000L, 60));
+    }
+
+    //Added some tests for age restrictions
+    //Test for checking overaged user
+    @Test
+    void testUserOverMaximumAge() {
+        assertThrows(NoValidLoanException.class,
+            () -> decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode, 4000L, 12));
+    }
+
+    //Test for checking underaged user ...should be here if I had a valid code
+
+    //Test for checkint that CalculateAge works correct
+
+    @Test
+    void testExtractAgeFromPersonalCode() {
+        int calculatedAge = decisionEngine.calculateAge(segment3PersonalCode2);
+        int expectedAge = 33;
+        assertEquals(expectedAge, calculatedAge);
     }
 
 }

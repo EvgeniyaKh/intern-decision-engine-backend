@@ -14,7 +14,7 @@ public class DecisionEngineConstants {
     public static final Integer SEGMENT_3_CREDIT_MODIFIER = 1000;
     public static final Integer MINIMUM_AGE = 18;
     public static final Map<String, Integer> EXPECTED_LIFETIME = Map.of(
-        "Estonia", 82,
+        "Estonia", 79,
         "Latvia", 75,
         "Lithuania", 77,
         "default", 72

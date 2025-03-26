@@ -128,9 +128,9 @@ public class DecisionEngine {
     private void verifyInputs(String userCountry, String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException {
 
-        // if (!validator.isValid(personalCode)) {
-        //     throw new InvalidPersonalCodeException("Invalid personal ID code!");
-        // }
+        if (!validator.isValid(personalCode)) {
+            throw new InvalidPersonalCodeException("Invalid personal ID code!");
+        }
         int userAge = calculateAge(personalCode);
 
         //minimum age check
