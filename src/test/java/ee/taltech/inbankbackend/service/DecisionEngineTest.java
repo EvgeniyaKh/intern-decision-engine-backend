@@ -24,14 +24,18 @@ class DecisionEngineTest {
     private String segment1PersonalCode;
     private String segment2PersonalCode;
     private String segment3PersonalCode;
+    private String overagedPersonalCode;
+    private String underagedPersonalCode;
+    private String userCountry;
 
     @BeforeEach
     void setUp() {
         debtorPersonalCode = "37605030299";
         segment1PersonalCode = "50307172740";
-        segment2PersonalCode = "38411266610";
-        segment3PersonalCode = "35006069515";
-        segment3PersonalCode2 = "49110068123";
+        segment2PersonalCode = "38411266610";        
+        segment3PersonalCode = "49110068123";
+        overagedPersonalCode = "35006069515";
+        underagedPersonalCode = "31006063612";
         userCountry = "Estonia";
     }
 
@@ -60,7 +64,7 @@ class DecisionEngineTest {
     @Test
     void testSegment3PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode2, 4000L, 12);
+        Decision decision = decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode, 4000L, 12);
         assertEquals(10000, decision.getLoanAmount());
         assertEquals(12, decision.getLoanPeriod());
     }
@@ -114,17 +118,23 @@ class DecisionEngineTest {
     //Test for checking overaged user
     @Test
     void testUserOverMaximumAge() {
-        assertThrows(NoValidLoanException.class,
-            () -> decisionEngine.calculateApprovedLoan(userCountry, segment3PersonalCode, 4000L, 12));
+        InvalidPersonalCodeException exception = assertThrows(InvalidPersonalCodeException.class,
+            () -> decisionEngine.calculateApprovedLoan(userCountry, overagedPersonalCode, 4000L, 12));
+        assertEquals("User's age exceeds the maximum age for receiving a loan.", exception.getMessage());
     }
 
-    //Test for checking underaged user ...should be here if I had a valid code
+    //Test for checking underaged user
+    @Test
+    void testUserUnderMinimumAge() {
+        InvalidPersonalCodeException exception = assertThrows(InvalidPersonalCodeException.class,
+            () -> decisionEngine.calculateApprovedLoan(userCountry, underagedPersonalCode, 4000L, 12));
+        assertEquals("The user has not yet reached the age allowed to receive a loan.", exception.getMessage());
+    }
 
     //Test for checkint that CalculateAge works correct
-
     @Test
-    void testExtractAgeFromPersonalCode() {
-        int calculatedAge = decisionEngine.calculateAge(segment3PersonalCode2);
+    void testCalculateAgeFromPersonalCode() {
+        int calculatedAge = decisionEngine.calculateAge(segment3PersonalCode);
         int expectedAge = 33;
         assertEquals(expectedAge, calculatedAge);
     }

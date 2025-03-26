@@ -21,7 +21,7 @@ public class DecisionEngine {
     private int creditModifier = 0;
 
     /** Calculating the age of user */
-    private int calculateAge(String personalCode) {
+    public int calculateAge(String personalCode) {
         int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
         int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
         int currentDay = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH);
