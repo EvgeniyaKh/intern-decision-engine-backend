@@ -1,5 +1,6 @@
 package ee.taltech.inbankbackend.config;
 
+import java.util.Map;
 /**
  * Holds all necessary constants for the decision engine.
  */
@@ -12,10 +13,10 @@ public class DecisionEngineConstants {
     public static final Integer SEGMENT_2_CREDIT_MODIFIER = 300;
     public static final Integer SEGMENT_3_CREDIT_MODIFIER = 1000;
     public static final Integer MINIMUM_AGE = 18;
-    public static final Integer AVERAGE_EXPECTED_LIFETIME = 72;
     public static final Map<String, Integer> EXPECTED_LIFETIME = Map.of(
-        "Estonia", 79,
+        "Estonia", 82,
         "Latvia", 75,
-        "Lithuania", 77
-    )
+        "Lithuania", 77,
+        "default", 72
+    );
 }

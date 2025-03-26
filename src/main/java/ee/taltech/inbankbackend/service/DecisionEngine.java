@@ -22,22 +22,19 @@ public class DecisionEngine {
 
     /** Calculating the age of user */
     private int calculateAge(String personalCode) {
-        //pesonalCode = "53807173568";
         int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
         int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
         int currentDay = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH);
         int birthYear = Integer.parseInt(personalCode.substring(1, 3));
-        int birthCentury = (birthYear <= currentYear) ? 2000 : 1900;
+        int birthCentury = (birthYear <= (currentYear - 2000)) ? 2000 : 1900;;
         int fullBirthYear = birthCentury + birthYear;
         int birthMonth = Integer.parseInt(personalCode.substring(3, 5));
         int birthDay = Integer.parseInt(personalCode.substring(5, 7));
         int age = currentYear - fullBirthYear;
-        System.out.println("Значение возраста 1 --- " + age);
         if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
         age--;
         }
-        System.out.println("Значение возраста 2 --- " + age);
-        return age
+        return age;
     }
 
     /**
@@ -131,24 +128,21 @@ public class DecisionEngine {
     private void verifyInputs(String userCountry, String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException {
 
-        if (!validator.isValid(personalCode)) {
-            throw new InvalidPersonalCodeException("Invalid personal ID code!");
-        }
+        // if (!validator.isValid(personalCode)) {
+        //     throw new InvalidPersonalCodeException("Invalid personal ID code!");
+        // }
         int userAge = calculateAge(personalCode);
-        System.out.println("Значение возраста 3 УЖЕ НА ВАЛИДАЦИИ  --- " + userAge);
+
         //minimum age check
         if (userAge < DecisionEngineConstants.MINIMUM_AGE) {
             throw new InvalidPersonalCodeException("The user has not yet reached the age allowed to receive a loan.");
         }
-
-        int maxAge = DecisionEngineConstants.EXPECTED_LIFETIME.get(userCountry);
-        if (maxAge != null) {
-            maxAge -= DecisionEngineConstants.MAXIMUM_LOAN_PERIOD;
-        } else {
-            maxAge -= DecisionEngineConstants.AVERAGE_EXPECTED_LIFETIME; //use the average life expectancy in Europe
+        if (userCountry == null || userCountry.isEmpty() || userCountry.equals("Other")) {
+            userCountry = "default";
         }
+        Integer maxAge = DecisionEngineConstants.EXPECTED_LIFETIME.get(userCountry) - (DecisionEngineConstants.MAXIMUM_LOAN_PERIOD / 12);
         //maximum age check
-        if (userAge > maxAge) {
+        if (userAge >= maxAge) {
             throw new InvalidPersonalCodeException("User's age exceeds the maximum age for receiving a loan.");
         }
         //then continuing checking the amount and period
