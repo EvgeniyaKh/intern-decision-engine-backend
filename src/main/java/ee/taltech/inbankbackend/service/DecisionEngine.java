@@ -20,12 +20,29 @@ public class DecisionEngine {
     private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
     private int creditModifier = 0;
 
+    /** Calculating the age of user */
+    public int calculateAge(String personalCode) {
+        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        int currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1;
+        int currentDay = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH);
+        int birthYear = Integer.parseInt(personalCode.substring(1, 3));
+        int birthCentury = (birthYear <= (currentYear - 2000)) ? 2000 : 1900;;
+        int fullBirthYear = birthCentury + birthYear;
+        int birthMonth = Integer.parseInt(personalCode.substring(3, 5));
+        int birthDay = Integer.parseInt(personalCode.substring(5, 7));
+        int age = currentYear - fullBirthYear;
+        if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+        age--;
+        }
+        return age;
+    }
+
     /**
      * Calculates the maximum loan amount and period for the customer based on their ID code,
      * the requested loan amount and the loan period.
      * The loan period must be between 12 and 60 months (inclusive).
      * The loan amount must be between 2000 and 10000€ months (inclusive).
-     *
+     * @param userCountry
      * @param personalCode ID code of the customer that made the request.
      * @param loanAmount Requested loan amount
      * @param loanPeriod Requested loan period
@@ -35,11 +52,11 @@ public class DecisionEngine {
      * @throws InvalidLoanPeriodException If the requested loan period is invalid
      * @throws NoValidLoanException If there is no valid loan found for the given ID code, loan amount and loan period
      */
-    public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod)
+    public Decision calculateApprovedLoan(String userCountry, String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
             NoValidLoanException {
         try {
-            verifyInputs(personalCode, loanAmount, loanPeriod);
+            verifyInputs(userCountry, personalCode, loanAmount, loanPeriod);
         } catch (Exception e) {
             return new Decision(null, null, e.getMessage());
         }
@@ -108,12 +125,27 @@ public class DecisionEngine {
      * @throws InvalidLoanAmountException If the requested loan amount is invalid
      * @throws InvalidLoanPeriodException If the requested loan period is invalid
      */
-    private void verifyInputs(String personalCode, Long loanAmount, int loanPeriod)
+    private void verifyInputs(String userCountry, String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException {
 
         if (!validator.isValid(personalCode)) {
             throw new InvalidPersonalCodeException("Invalid personal ID code!");
         }
+        int userAge = calculateAge(personalCode);
+
+        //minimum age check
+        if (userAge < DecisionEngineConstants.MINIMUM_AGE) {
+            throw new InvalidPersonalCodeException("The user has not yet reached the age allowed to receive a loan.");
+        }
+        if (userCountry == null || userCountry.isEmpty() || userCountry.equals("Other")) {
+            userCountry = "default";
+        }
+        Integer maxAge = DecisionEngineConstants.EXPECTED_LIFETIME.get(userCountry) - (DecisionEngineConstants.MAXIMUM_LOAN_PERIOD / 12);
+        //maximum age check
+        if (userAge >= maxAge) {
+            throw new InvalidPersonalCodeException("User's age exceeds the maximum age for receiving a loan.");
+        }
+        //then continuing checking the amount and period
         if (!(DecisionEngineConstants.MINIMUM_LOAN_AMOUNT <= loanAmount)
                 || !(loanAmount <= DecisionEngineConstants.MAXIMUM_LOAN_AMOUNT)) {
             throw new InvalidLoanAmountException("Invalid loan amount!");
